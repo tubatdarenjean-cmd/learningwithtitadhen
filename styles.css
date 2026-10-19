@@ -12,3 +12,14 @@
 @media(max-width:600px){.brand-word{font-size:24px}.brand-heart{font-size:33px}}
 
 .login-card label:not(.auth-consent){display:block;font-size:.78rem;font-weight:600;margin:12px 0 5px}.login-card input[type=email],.login-card input[type=password],.login-card input#authName{box-sizing:border-box;width:100%;border:1px solid #e9d9e0;border-radius:10px;padding:12px;font:inherit;min-height:45px}.login-card #authFields>.btn{margin-top:13px;width:100%;justify-content:center}.auth-consent{display:flex;gap:10px;align-items:flex-start;font-size:.78rem;margin-top:12px}.auth-link{border:0;background:none;text-decoration:underline;cursor:pointer;font:inherit;color:#e90063;margin-top:15px}.login-card{max-height:90vh;overflow:auto}#authNotice{margin-top:12px}
+.academy-logout{border:1px solid #efbad0;color:#9b2559;background:#fff;border-radius:10px;padding:8px 12px;font:600 12px Poppins,sans-serif;cursor:pointer}
+.academy-logout[hidden]{display:none!important}
+.sidebar-logout{margin:15px 10px 6px;text-align:left;width:calc(100% - 20px)}
+.graduation-card{width:min(520px,calc(100vw - 32px));max-height:88vh;overflow:auto;background:#fff;border-radius:22px;padding:clamp(22px,5vw,45px);box-sizing:border-box;text-align:center;box-shadow:0 18px 70px #4c123d33}
+.graduation-card h2{font-family:'DM Serif Display',Georgia,serif;font-size:clamp(34px,5vw,51px);font-weight:400;line-height:1.15;margin:12px 0 18px}
+.graduation-card h2 em{color:#f71970;font-weight:400}
+.graduation-card p{font:400 14px/1.8 Poppins,sans-serif;margin:10px 0;color:#4c3b43}
+.graduation-card .graduation-lead{font-weight:600;color:#261924}
+.graduation-card .graduation-signature{color:#f71970;font-weight:700;margin:20px 0}
+.graduation-stars{color:#f71970;font-size:40px;letter-spacing:12px;margin-bottom:12px}
+.graduation-card .btn{margin:10px auto 0;display:flex;justify-content:center}
