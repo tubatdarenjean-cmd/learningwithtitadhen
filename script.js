@@ -41,8 +41,8 @@ function refreshCourseButtons(enrolled){
  const buttons={heroDemo:['Enroll for free','Jump back to my lessons'],previewDashboard:['Enroll for free','Jump back to my lessons'],startCourse:['Start learning','Continue learning'],footerStart:["Let's get started",'Jump back to my lessons']};
  for(const [id,[before,after]] of Object.entries(buttons)){const btn=$(id);if(btn)btn.innerHTML=(enrolled?after:before)+' <span aria-hidden="true">↗</span>';}
 }
-window.academyRefreshCourseButtons=()=>{const enrolled=!!window.academyEnrollmentReady;refreshCourseButtons(enrolled);const n=window.academyStudentName||'';const top=$('loginBtn'),mobile=$('mobileLogin');if(top)top.textContent=enrolled?'My lessons ↗':'Enroll for free ↗';if(mobile)mobile.textContent=enrolled?'My lessons':'Enroll for free';for(const id of ['headerLogout','mobileLogout']){const element=$(id);if(element)element.hidden=!enrolled;}};
-window.addEventListener('academy:session-ready',e=>{const enrolled=!!e.detail?.enrolled;refreshCourseButtons(enrolled);const name=e.detail?.name||'';const desktop=$('loginBtn'),mobile=$('mobileLogin');if(desktop)desktop.textContent=enrolled?'Hi, '+name+'! My lessons ↗':'Enroll for free ↗';if(mobile)mobile.textContent=enrolled?'Hi, '+name+'! My lessons':'Enroll for free';for(const id of ['headerLogout','mobileLogout']){const btn=$(id);if(btn)btn.hidden=!enrolled;}});
+window.academyRefreshCourseButtons=()=>{const enrolled=!!window.academyEnrollmentReady;refreshCourseButtons(enrolled);const n=window.academyStudentName||'';const top=$('loginBtn'),mobile=$('mobileLogin');if(top)top.textContent=enrolled?'My lessons ↗':'Enroll for free ↗';if(mobile)mobile.textContent=enrolled?'My lessons':'Enroll for free';for(const id of ['footerLogout']){const element=$(id);if(element)element.hidden=!enrolled;}};
+window.addEventListener('academy:session-ready',e=>{const enrolled=!!e.detail?.enrolled;refreshCourseButtons(enrolled);const name=e.detail?.name||'';const desktop=$('loginBtn'),mobile=$('mobileLogin');if(desktop)desktop.textContent=enrolled?'Hi, '+name+'! My lessons ↗':'Enroll for free ↗';if(mobile)mobile.textContent=enrolled?'Hi, '+name+'! My lessons':'Enroll for free';for(const id of ['footerLogout']){const btn=$(id);if(btn)btn.hidden=!enrolled;}});
 
 window.academyStudentProfileChanged=(name)=>{
  refreshCourseButtons(!!window.academyEnrollmentReady);
@@ -50,7 +50,7 @@ window.academyStudentProfileChanged=(name)=>{
  const header=$('loginBtn'),mobile=$('mobileLogin');
  if(header)header.textContent=first?'Hi, '+first+'! My lessons ↗' :'Enroll for free ↗';
  if(mobile)mobile.textContent=first?'Hi, '+first+'! My lessons' :'Enroll for free';
- for(const id of ['headerLogout','mobileLogout']){const btn=$(id);if(btn)btn.hidden=!first;}
+ for(const id of ['footerLogout']){const btn=$(id);if(btn)btn.hidden=!first;}
  let welcome=$('studentWelcome');
  if(!welcome){welcome=document.createElement('div');welcome.id='studentWelcome';welcome.style.cssText='margin:0 0 20px;padding:18px 22px;border-radius:14px;background:#fff1f7;border:1px solid #f9cfdf;color:#48263a;font-family:Poppins,sans-serif;';const target=$('lessonNumber');target?.parentNode.insertBefore(welcome,target);}
  if(welcome){welcome.textContent=first?'Welcome back, '+first+'! ♡ Ready for your next lesson?':'Welcome to your learning space! ♡';}
