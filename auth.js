@@ -3,6 +3,8 @@ const academyClient=window.supabase.createClient('https://gumdxsauchiyhmdyvltj.s
 const field=id=>document.getElementById(id);
 let academyUser=null, saveTimer=null, authSequence=0;
 window.academyEnrollmentReady=false;
+window.academySessionLoading=true;
+window.academyStudentName='';
 function authMessage(message){const el=field('authNotice');el.textContent=message;el.style.display='block';el.style.padding='12px 14px';el.style.marginTop='12px';el.style.borderRadius='9px';el.style.background='#fff0f5';el.style.color='#6d1235';el.style.fontWeight='600';el.setAttribute('role','status');el.setAttribute('aria-live','polite');}
 function fillProfile(data){
  if(!data)return;
@@ -40,18 +42,21 @@ window.academySave=(current,i)=>{
 async function verifyAccess(session){
  const seq=++authSequence;
  academyUser=session?.user||null;window.academyEnrollmentReady=false;
- if(!academyUser){window.academyProgressLoaded?.({});window.closeStudentDashboard?.();return;}
+ if(!academyUser){window.academySessionLoading=false;window.academyStudentName='';window.academyStudentProfileChanged?.('');window.academyProgressLoaded?.({});window.closeStudentDashboard?.();return;}
  const {data,error}=await academyClient.from('student_profiles').select('display_name,contact_email,experience_level,marketing_opt_in,privacy_accepted_at,profile_completed').eq('user_id',academyUser.id).maybeSingle();
  if(seq!==authSequence)return;
- if(error||!data){authMessage('Could not load student profile. Try refreshing the page.');window.closeStudentDashboard?.();return;}
+ if(error||!data){window.academySessionLoading=false;authMessage('Could not load student profile. Try refreshing the page.');window.closeStudentDashboard?.();return;}
  fillProfile(data);
+ window.academySessionLoading=false;
  window.academyEnrollmentReady=!!(data.profile_completed&&data.display_name&&data.contact_email&&data.experience_level&&data.privacy_accepted_at);
  if(!window.academyEnrollmentReady){
   authMessage('Complete your student information to unlock the lessons.');
   window.closeStudentDashboard?.();
   return;
  }
- authMessage('Your profile is saved. You can now access your lessons!');
+ window.academyStudentName=data.display_name.trim().split(/\s+/)[0];
+ window.academyStudentProfileChanged?.(window.academyStudentName);
+ authMessage('Welcome back, '+window.academyStudentName+'! Your lessons are ready.');
  await loadProgress();
 }
 const academyTurnstileSiteKey='0x4AAAAAAFbfslHa6qPAxK7p';
