@@ -3,7 +3,7 @@ const academyClient=window.supabase.createClient('https://gumdxsauchiyhmdyvltj.s
 const field=id=>document.getElementById(id);
 let academyUser=null, saveTimer=null, authSequence=0;
 window.academyEnrollmentReady=false;
-function authMessage(message){field('authNotice').textContent=message;}
+function authMessage(message){const el=field('authNotice');el.textContent=message;el.style.display='block';el.style.padding='12px 14px';el.style.marginTop='12px';el.style.borderRadius='9px';el.style.background='#fff0f5';el.style.color='#6d1235';el.style.fontWeight='600';el.setAttribute('role','status');el.setAttribute('aria-live','polite');}
 function fillProfile(data){
  if(!data)return;
  field('authName').value=data.display_name||'';
@@ -58,7 +58,7 @@ field('authSignup').onclick=async()=>{
  const button=field('authSignup');
  if(button.disabled)return;
  const display_name=field('authName').value.trim(),contact_email=field('authEmail').value.trim().toLowerCase(),experience_level=field('authExperience').value,marketing_opt_in=field('authMarketing').checked;
- if(display_name.length<2||!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(contact_email)||!experience_level||!field('authPrivacy').checked){authMessage('Please complete your name, valid email, experience level, and privacy acknowledgement.');return;}
+ if(display_name.length<2||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact_email)||!experience_level||!field('authPrivacy').checked){authMessage('Please complete your name, valid email, experience level, and privacy acknowledgement.');return;}
  button.disabled=true;button.textContent='Saving your student profile…';
  try{
   let {data:{session}}=await academyClient.auth.getSession();
@@ -66,8 +66,9 @@ field('authSignup').onclick=async()=>{
   if(!session?.user?.id)throw Error('Could not establish your student session.');
   const user_id=session.user.id;
   // The auth signup trigger creates the blank student profile; upsert handles eventual consistency.
-  const {error}=await academyClient.from('student_profiles').update({display_name,contact_email,experience_level,marketing_opt_in,privacy_accepted_at:new Date().toISOString(),profile_completed:true,updated_at:new Date().toISOString()}).eq('user_id',user_id);
+  const {data:updatedProfile,error}=await academyClient.from('student_profiles').update({display_name,contact_email,experience_level,marketing_opt_in,privacy_accepted_at:new Date().toISOString(),profile_completed:true,updated_at:new Date().toISOString()}).eq('user_id',user_id).select('user_id').maybeSingle();
   if(error)throw error;
+  if(!updatedProfile)throw Error('Your student profile was not saved. Please refresh and try again.');
   await verifyAccess(session);
   if(!window.academyEnrollmentReady)throw Error('Student profile could not be confirmed. Please retry.');
   authMessage('You’re enrolled, future VA! ♡ Your lessons are now unlocked. Progress stays on this browser.');
