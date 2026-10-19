@@ -96,6 +96,7 @@ field('authSignup').onclick=async()=>{
   field('loginOverlay').classList.remove('open');
   field('loginOverlay').setAttribute('aria-hidden','true');
   document.body.style.overflow='';
+  window.academyRefreshCourseButtons?.();
   if(typeof window.openStudentCourse==='function')window.openStudentCourse();
  }catch(e){
   authMessage(/Anonymous sign-ins are disabled|anonymous/i.test(e.message)?'Anonymous student access must be enabled in Supabase Authentication → Providers → Anonymous Sign-Ins.':('Could not enroll: '+e.message));
@@ -103,8 +104,8 @@ field('authSignup').onclick=async()=>{
 };
 async function academyLogout(){
  if(!window.confirm('Log out of Learning With Tita Dhen? This password-free account cannot be recovered if you log out, so you may permanently lose your saved lessons and progress. Continue?'))return;
- try{const {error}=await academyClient.auth.signOut();if(error)throw error;window.academyEnrollmentReady=false;window.academyStudentName='';window.academyStudentProfileChanged?.('');window.closeStudentDashboard?.();window.closeGraduation?.();authMessage('You have logged out. Enroll again to start a new browser-linked student account.');}catch(e){authMessage('Could not log out: '+e.message);}
+ try{const {error}=await academyClient.auth.signOut();if(error)throw error;window.academyEnrollmentReady=false;window.academyStudentName='';window.academyStudentProfileChanged?.('');window.academyRefreshCourseButtons?.();window.closeStudentDashboard?.();window.closeGraduation?.();authMessage('You have logged out. Enroll again to start a new browser-linked student account.');}catch(e){authMessage('Could not log out: '+e.message);}
 }
 ['headerLogout','mobileLogout','courseLogout'].forEach(id=>{const b=field(id);if(b)b.onclick=academyLogout;});
 academyClient.auth.onAuthStateChange((event,session)=>setTimeout(()=>verifyAccess(session),0));
-academyClient.auth.getSession().then(({data})=>verifyAccess(data.session));
+// onAuthStateChange supplies INITIAL_SESSION; avoid a second, potentially stale session request.
