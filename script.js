@@ -4,7 +4,7 @@ $('year').textContent=new Date().getFullYear();
 $('modulePreview').innerHTML=modules.map((m,i)=>`<div class="module-preview"><b>${String(i+1).padStart(2,'0')}</b><span>${m.title}</span></div>`).join('');
 function safe(t){return String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function done(i){return !!saved['done'+i]};function eligible(){return modules.every((_,i)=>done(i))}
-function updateBonus(){let yes=eligible();$('bonusLocked').hidden=yes;$('bonusUnlocked').hidden=!yes;$('bonusSideText').textContent=yes?'UNLOCKED · YOUR GRADUATION GIFT':'LOCKED · COMPLETE ALL MODULES';}
+function updateBonus(){let yes=eligible();$('bonusLocked').hidden=yes;$('bonusUnlocked').hidden=!yes;$('bonusSideText').textContent=yes?'UNLOCKED · YOUR GRADUATION GIFT':'LOCKED · COMPLETE ALL MODULES';let reopen=$('reopenGraduation');if(reopen)reopen.hidden=!yes;}
 function render(){let m=modules[active];$('lessonNumber').textContent=`MODULE ${String(active+1).padStart(2,'0')} / ${String(modules.length).padStart(2,'0')}`;$('appTitle').textContent=m.title;$('lessonIntro').textContent=m.intro;
 $('lessonList').innerHTML=m.sections.map((s,i)=>`<article class="teaching-section"><p class="section-count">LESSON ${String(i+1).padStart(2,'0')} / ${m.sections.length}</p><h4>${safe(s.title)}</h4><p>${safe(s.body)}</p><div class="worked-example"><b>LET'S SEE AN EXAMPLE</b><p>${safe(s.example)}</p></div><p class="tita-note"><b>Tita's reminder:</b> ${safe(s.note)}</p></article>`).join('');
 $('taskText').textContent=m.task;$('taskNotes').value=saved['notes'+active]||'';$('quizQuestion').textContent=m.question;$('quizOptions').innerHTML='';m.options.forEach((x,i)=>{let b=document.createElement('button');b.className='quiz-option';b.textContent=`${String.fromCharCode(65+i)}. ${x}`;b.addEventListener('click',()=>{let right=i===m.correct;saved['quiz'+active]=right;persist();document.querySelectorAll('.quiz-option').forEach((btn,j)=>{btn.classList.toggle('correct',j===m.correct);btn.classList.toggle('wrong',j===i&&!right)});$('quizFeedback').textContent=(right?'Tama! ':'Not quite — try again. ')+m.explain;updateCompletion()});$('quizOptions').appendChild(b)});
@@ -57,3 +57,6 @@ window.academyStudentProfileChanged=(name)=>{
 
 // Auth may finish loading before script.js, so sync all returning-student CTAs on initialization.
 refreshCourseButtons(!!window.academyEnrollmentReady);
+
+// Graduates may revisit the certificate without repeating the last lesson.
+const revisit=document.createElement('button');revisit.type='button';revisit.id='reopenGraduation';revisit.className='btn btn-pink';revisit.textContent='View my graduation & certificate ♡';revisit.hidden=true;revisit.style.marginTop='14px';revisit.onclick=showGraduation;$('bonusSection').appendChild(revisit);updateBonus();
