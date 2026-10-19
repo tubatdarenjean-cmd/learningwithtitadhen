@@ -5,6 +5,17 @@ let academyUser=null, saveTimer=null, authSequence=0;
 window.academyEnrollmentReady=false;
 window.academySessionLoading=true;
 window.academyStudentName='';
+function syncStudentNavigation(){
+ const enrolled=window.academyEnrollmentReady===true;
+ const name=window.academyStudentName||'';
+ const choices={heroDemo:['Enroll for free','Jump back to my lessons'],previewDashboard:['Enroll for free','Jump back to my lessons'],startCourse:['Start learning','Continue learning'],footerStart:["Let's get started",'Jump back to my lessons']};
+ for(const [id,labels] of Object.entries(choices)){const element=document.getElementById(id);if(element)element.innerHTML=(enrolled?labels[1]:labels[0])+' <span aria-hidden="true">↗</span>';}
+ const nav=document.getElementById('loginBtn'),mobile=document.getElementById('mobileLogin');
+ if(nav)nav.textContent=enrolled?'My lessons ↗':'Enroll for free ↗';
+ if(mobile)mobile.textContent=enrolled?'My lessons':'Enroll for free';
+ for(const id of ['headerLogout','mobileLogout']){const item=document.getElementById(id);if(item)item.hidden=!enrolled;}
+}
+window.syncStudentNavigation=syncStudentNavigation;
 function authMessage(message){const el=field('authNotice');el.textContent=message;el.style.display='block';el.style.padding='12px 14px';el.style.marginTop='12px';el.style.borderRadius='9px';el.style.background='#fff0f5';el.style.color='#6d1235';el.style.fontWeight='600';el.setAttribute('role','status');el.setAttribute('aria-live','polite');}
 function fillProfile(data){
  if(!data)return;
@@ -42,7 +53,7 @@ window.academySave=(current,i)=>{
 async function verifyAccess(session){
  const seq=++authSequence;
  academyUser=session?.user||null;window.academyEnrollmentReady=false;
- if(!academyUser){window.academySessionLoading=false;window.academyStudentName='';window.academyStudentProfileChanged?.('');window.academyRefreshCourseButtons?.();window.dispatchEvent(new CustomEvent('academy:session-ready',{detail:{enrolled:false,name:''}}));window.closeGraduation?.();window.academyProgressLoaded?.({});window.closeStudentDashboard?.();return;}
+ if(!academyUser){window.academySessionLoading=false;window.academyStudentName='';window.academyStudentProfileChanged?.('');window.academyRefreshCourseButtons?.();syncStudentNavigation();window.dispatchEvent(new CustomEvent('academy:session-ready',{detail:{enrolled:false,name:''}}));window.closeGraduation?.();window.academyProgressLoaded?.({});window.closeStudentDashboard?.();return;}
  const {data,error}=await academyClient.from('student_profiles').select('display_name,contact_email,experience_level,marketing_opt_in,privacy_accepted_at,profile_completed').eq('user_id',academyUser.id).maybeSingle();
  if(seq!==authSequence)return;
  if(error||!data){window.academySessionLoading=false;authMessage('Could not load student profile. Try refreshing the page.');window.closeStudentDashboard?.();return;}
@@ -57,7 +68,7 @@ async function verifyAccess(session){
  window.academyStudentName=data.display_name.trim().split(/\s+/)[0];
  window.academyStudentProfileChanged?.(window.academyStudentName);
  window.academyRefreshCourseButtons?.();
- window.dispatchEvent(new CustomEvent('academy:session-ready',{detail:{enrolled:true,name:window.academyStudentName}}));
+ window.dispatchEvent(new CustomEvent('academy:session-ready',{detail:{enrolled:true,name:window.academyStudentName}}));syncStudentNavigation();
  authMessage('Welcome back, '+window.academyStudentName+'! Your lessons are ready.');
  await loadProgress();
 }
@@ -97,6 +108,7 @@ field('authSignup').onclick=async()=>{
   field('loginOverlay').setAttribute('aria-hidden','true');
   document.body.style.overflow='';
   window.academyRefreshCourseButtons?.();
+  syncStudentNavigation();
   if(typeof window.openStudentCourse==='function')window.openStudentCourse();
  }catch(e){
   authMessage(/Anonymous sign-ins are disabled|anonymous/i.test(e.message)?'Anonymous student access must be enabled in Supabase Authentication → Providers → Anonymous Sign-Ins.':('Could not enroll: '+e.message));
@@ -104,8 +116,11 @@ field('authSignup').onclick=async()=>{
 };
 async function academyLogout(){
  if(!window.confirm('Log out of Learning With Tita Dhen? This password-free account cannot be recovered if you log out, so you may permanently lose your saved lessons and progress. Continue?'))return;
- try{const {error}=await academyClient.auth.signOut();if(error)throw error;window.academyEnrollmentReady=false;window.academyStudentName='';window.academyStudentProfileChanged?.('');window.academyRefreshCourseButtons?.();window.closeStudentDashboard?.();window.closeGraduation?.();authMessage('You have logged out. Enroll again to start a new browser-linked student account.');}catch(e){authMessage('Could not log out: '+e.message);}
+ try{const {error}=await academyClient.auth.signOut();if(error)throw error;window.academyEnrollmentReady=false;window.academyStudentName='';window.academyStudentProfileChanged?.('');window.academyRefreshCourseButtons?.();window.closeStudentDashboard?.();window.closeGraduation?.();syncStudentNavigation();authMessage('You have logged out. Enroll again to start a new browser-linked student account.');}catch(e){authMessage('Could not log out: '+e.message);}
 }
 ['headerLogout','mobileLogout','courseLogout'].forEach(id=>{const b=field(id);if(b)b.onclick=academyLogout;});
 academyClient.auth.onAuthStateChange((event,session)=>setTimeout(()=>verifyAccess(session),0));
 // onAuthStateChange supplies INITIAL_SESSION; avoid a second, potentially stale session request.
+
+// Reconcile after asynchronous authentication and page rendering.
+window.addEventListener('load',syncStudentNavigation);
