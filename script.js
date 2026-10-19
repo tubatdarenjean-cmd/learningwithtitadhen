@@ -16,7 +16,13 @@ function openCourse(){if(!window.academyEnrollmentReady){openLogin();if(window.a
 window.closeStudentDashboard=closeCourse;
 
 window.openStudentCourse=openCourse;
+function refreshCourseButtons(enrolled){
+ const buttons={heroDemo:['Enroll for free','Jump back to my lessons'],previewDashboard:['Enroll for free','Jump back to my lessons'],startCourse:['Start learning','Continue learning'],footerStart:["Let's get started",'Jump back to my lessons']};
+ for(const [id,[before,after]] of Object.entries(buttons)){const btn=$(id);if(btn)btn.innerHTML=(enrolled?after:before)+' <span aria-hidden="true">↗</span>';}
+}
+window.academyRefreshCourseButtons=()=>refreshCourseButtons(!!window.academyEnrollmentReady);
 window.academyStudentProfileChanged=(name)=>{
+ refreshCourseButtons(!!window.academyEnrollmentReady);
  const first=(name||'').trim();
  const header=$('loginBtn'),mobile=$('mobileLogin');
  if(header)header.textContent=first?'Hi, '+first+'! My lessons ↗':'Student access ↗';
