@@ -46,8 +46,8 @@ window.academyStudentProfileChanged=(name)=>{
  refreshCourseButtons(!!window.academyEnrollmentReady);
  const first=(name||'').trim();
  const header=$('loginBtn'),mobile=$('mobileLogin');
- if(header)header.textContent=first?'Hi, '+first+'! My lessons ↗':'Student access ↗';
- if(mobile)mobile.textContent=first?'Hi, '+first+'! My lessons':'Student access';
+ if(header)header.textContent=first?'Hi, '+first+'! My lessons ↗' :'Enroll for free ↗';
+ if(mobile)mobile.textContent=first?'Hi, '+first+'! My lessons' :'Enroll for free';
  for(const id of ['headerLogout','mobileLogout']){const btn=$(id);if(btn)btn.hidden=!first;}
  let welcome=$('studentWelcome');
  if(!welcome){welcome=document.createElement('div');welcome.id='studentWelcome';welcome.style.cssText='margin:0 0 20px;padding:18px 22px;border-radius:14px;background:#fff1f7;border:1px solid #f9cfdf;color:#48263a;font-family:Poppins,sans-serif;';const target=$('lessonNumber');target?.parentNode.insertBefore(welcome,target);}
