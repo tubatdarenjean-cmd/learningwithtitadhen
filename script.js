@@ -17,6 +17,17 @@ window.closeStudentDashboard=closeCourse;
 
 function showGraduation(){if(!window.academyEnrollmentReady)return;$('graduateName').textContent=window.academyStudentName||'future VA';$('graduationOverlay').classList.add('open');$('graduationOverlay').setAttribute('aria-hidden','false');document.body.style.overflow='hidden';$('graduationContinue').focus()}
 function closeGraduation(){$('graduationOverlay').classList.remove('open');$('graduationOverlay').setAttribute('aria-hidden','true');document.body.style.overflow=$('courseOverlay').classList.contains('open')?'hidden':''}
+$('certificateDownload').onclick=()=>{
+ if(!window.academyEnrollmentReady||!eligible()){alert('Finish all nine modules before receiving your certificate.');return;}
+ const fullName=$('authName').value.trim()||window.academyStudentName||'Student';
+ const date=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+ const tab=window.open('','_blank');
+ if(!tab){alert('Please allow pop-ups to print your certificate.');return;}
+ const escapedName=safe(fullName),escapedDate=safe(date);
+ tab.document.write('<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Learning With Tita Dhen — Course Completion</title><style>@page{size:landscape;margin:14mm}body{margin:0;font-family:Arial,sans-serif;color:#332633;background:white}.certificate{border:8px double #f71970;min-height:160mm;box-sizing:border-box;padding:30px 45px;text-align:center}.brand{font-size:16px;letter-spacing:4px;color:#d41467}.ornament{color:#f71970;font-size:29px;margin:12px}h1{font-family:Georgia,serif;font-size:48px;font-weight:400;margin:18px 0 10px}.name{font-family:Georgia,serif;font-size:40px;color:#f71970;margin:18px 0;border-bottom:1px solid #e6b5cb;display:inline-block;padding:0 45px 9px}.message{font-size:18px;line-height:1.6}.foot{margin-top:25px;font-size:13px}.note{font-size:10px;color:#776c70;margin-top:22px}@media print{button{display:none}}button{margin:14px;padding:12px 25px;border:0;background:#f71970;color:white;cursor:pointer}</style></head><body><div class="certificate"><div class="brand">♡ LEARNING WITH TITA DHEN</div><div class="ornament">✦ ♡ ✦</div><h1>Certificate of Completion</h1><p class="message">This certificate proudly celebrates</p><div class="name">'+escapedName+'</div><p class="message">for completing all nine learning modules and practice activities<br>in the <b>Learning With Tita Dhen — SMM for Beginners</b> course.</p><p class="foot">Completed on '+escapedDate+' · Keep learning. Keep practicing. Kaya mo yan! ♡</p><p class="note">A course participation/completion record, not an accredited professional certification. Completion is self-reported and not independently assessed.</p></div><button onclick="window.print()">Save or Print Certificate</button></body></html>');
+ tab.document.close();
+ tab.focus();
+};
 $('graduationContinue').onclick=closeGraduation;$('graduationClose').onclick=closeGraduation;$('graduationOverlay').addEventListener('click',e=>{if(e.target===$('graduationOverlay'))closeGraduation()});
 window.closeGraduation=closeGraduation;
 
@@ -38,3 +49,6 @@ window.academyStudentProfileChanged=(name)=>{
  if(welcome){welcome.textContent=first?'Welcome back, '+first+'! ♡ Ready for your next lesson?':'Welcome to your learning space! ♡';}
 };
 
+
+// Auth may finish loading before script.js, so sync all returning-student CTAs on initialization.
+refreshCourseButtons(!!window.academyEnrollmentReady);
