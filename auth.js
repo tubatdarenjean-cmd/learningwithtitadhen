@@ -13,7 +13,7 @@ function syncStudentNavigation(){
  const nav=document.getElementById('loginBtn'),mobile=document.getElementById('mobileLogin');
  if(nav)nav.textContent=enrolled?'My lessons ↗':'Enroll for free ↗';
  if(mobile)mobile.textContent=enrolled?'My lessons':'Enroll for free';
- for(const id of ['headerLogout','mobileLogout']){const item=document.getElementById(id);if(item)item.hidden=!enrolled;}
+ for(const id of ['footerLogout']){const item=document.getElementById(id);if(item)item.hidden=!enrolled;}
 }
 window.syncStudentNavigation=syncStudentNavigation;
 function authMessage(message){const el=field('authNotice');el.textContent=message;el.style.display='block';el.style.padding='12px 14px';el.style.marginTop='12px';el.style.borderRadius='9px';el.style.background='#fff0f5';el.style.color='#6d1235';el.style.fontWeight='600';el.setAttribute('role','status');el.setAttribute('aria-live','polite');}
@@ -118,7 +118,7 @@ async function academyLogout(){
  if(!window.confirm('Log out of Learning With Tita Dhen? This password-free account cannot be recovered if you log out, so you may permanently lose your saved lessons and progress. Continue?'))return;
  try{const {error}=await academyClient.auth.signOut();if(error)throw error;window.academyEnrollmentReady=false;window.academyStudentName='';window.academyStudentProfileChanged?.('');window.academyRefreshCourseButtons?.();window.closeStudentDashboard?.();window.closeGraduation?.();syncStudentNavigation();authMessage('You have logged out. Enroll again to start a new browser-linked student account.');}catch(e){authMessage('Could not log out: '+e.message);}
 }
-['headerLogout','mobileLogout','courseLogout'].forEach(id=>{const b=field(id);if(b)b.onclick=academyLogout;});
+['footerLogout'].forEach(id=>{const b=field(id);if(b)b.onclick=academyLogout;});
 academyClient.auth.onAuthStateChange((event,session)=>setTimeout(()=>verifyAccess(session),0));
 // onAuthStateChange supplies INITIAL_SESSION; avoid a second, potentially stale session request.
 
