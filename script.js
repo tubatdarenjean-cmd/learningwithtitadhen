@@ -42,6 +42,8 @@ function refreshCourseButtons(enrolled){
  for(const [id,[before,after]] of Object.entries(buttons)){const btn=$(id);if(btn)btn.innerHTML=(enrolled?after:before)+' <span aria-hidden="true">↗</span>';}
 }
 window.academyRefreshCourseButtons=()=>refreshCourseButtons(!!window.academyEnrollmentReady);
+window.addEventListener('academy:session-ready',e=>{const enrolled=!!e.detail?.enrolled;refreshCourseButtons(enrolled);const name=e.detail?.name||'';const desktop=$('loginBtn'),mobile=$('mobileLogin');if(desktop)desktop.textContent=enrolled?'Hi, '+name+'! My lessons ↗':'Enroll for free ↗';if(mobile)mobile.textContent=enrolled?'Hi, '+name+'! My lessons':'Enroll for free';for(const id of ['headerLogout','mobileLogout']){const btn=$(id);if(btn)btn.hidden=!enrolled;}});
+
 window.academyStudentProfileChanged=(name)=>{
  refreshCourseButtons(!!window.academyEnrollmentReady);
  const first=(name||'').trim();
@@ -57,6 +59,6 @@ window.academyStudentProfileChanged=(name)=>{
 
 // Auth may finish loading before script.js, so sync all returning-student CTAs on initialization.
 refreshCourseButtons(!!window.academyEnrollmentReady);
-
+if(window.academyEnrollmentReady)window.academyStudentProfileChanged(window.academyStudentName||'');
 // Graduates may revisit the certificate without repeating the last lesson.
 const revisit=document.createElement('button');revisit.type='button';revisit.id='reopenGraduation';revisit.className='btn btn-pink';revisit.textContent='View my graduation & certificate ♡';revisit.hidden=true;revisit.style.marginTop='14px';revisit.onclick=showGraduation;$('bonusSection').appendChild(revisit);updateBonus();
