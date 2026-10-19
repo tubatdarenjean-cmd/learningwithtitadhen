@@ -23,3 +23,7 @@
 .graduation-card .graduation-signature{color:#f71970;font-weight:700;margin:20px 0}
 .graduation-stars{color:#f71970;font-size:40px;letter-spacing:12px;margin-bottom:12px}
 .graduation-card .btn{margin:10px auto 0;display:flex;justify-content:center}
+
+/* Clear desktop and mobile student session controls */
+@media(max-width:720px){#headerLogout{display:none!important}#mobileLogout:not([hidden]){display:block!important;color:#a31b53;font-weight:600;text-align:left;padding:8px 0}#loginBtn{display:none!important}}
+@media(min-width:721px){#headerLogout:not([hidden]){display:inline-flex!important;align-items:center;white-space:nowrap}#loginBtn{white-space:nowrap}}
