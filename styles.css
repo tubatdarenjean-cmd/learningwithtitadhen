@@ -27,3 +27,5 @@
 /* Clear desktop and mobile student session controls */
 @media(max-width:720px){#headerLogout{display:none!important}#mobileLogout:not([hidden]){display:block!important;color:#a31b53;font-weight:600;text-align:left;padding:8px 0}#loginBtn{display:none!important}}
 @media(min-width:721px){#headerLogout:not([hidden]){display:inline-flex!important;align-items:center;white-space:nowrap}#loginBtn{white-space:nowrap}}
+
+@media(max-width:720px){.topbar #headerLogout{display:none!important}.mobile-links #mobileLogout:not([hidden]){display:block!important}}
