@@ -57,8 +57,8 @@ window.academyStudentProfileChanged=(name)=>{
 };
 
 
-// Auth may finish loading before script.js, so sync all returning-student CTAs on initialization.
-refreshCourseButtons(!!window.academyEnrollmentReady);
+// Keep all enrollment CTAs synchronized with verified enrollment state.
+window.academyRefreshCourseButtons?.();
 if(window.academyEnrollmentReady)window.academyStudentProfileChanged(window.academyStudentName||'');
 // Graduates may revisit the certificate without repeating the last lesson.
 const revisit=document.createElement('button');revisit.type='button';revisit.id='reopenGraduation';revisit.className='btn btn-pink';revisit.textContent='View my graduation & certificate ♡';revisit.hidden=true;revisit.style.marginTop='14px';revisit.onclick=showGraduation;$('bonusSection').appendChild(revisit);updateBonus();
