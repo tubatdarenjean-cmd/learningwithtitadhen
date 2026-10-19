@@ -42,7 +42,7 @@ window.academySave=(current,i)=>{
 async function verifyAccess(session){
  const seq=++authSequence;
  academyUser=session?.user||null;window.academyEnrollmentReady=false;
- if(!academyUser){window.academySessionLoading=false;window.academyStudentName='';window.academyStudentProfileChanged?.('');window.closeGraduation?.();window.academyProgressLoaded?.({});window.closeStudentDashboard?.();return;}
+ if(!academyUser){window.academySessionLoading=false;window.academyStudentName='';window.academyStudentProfileChanged?.('');window.academyRefreshCourseButtons?.();window.closeGraduation?.();window.academyProgressLoaded?.({});window.closeStudentDashboard?.();return;}
  const {data,error}=await academyClient.from('student_profiles').select('display_name,contact_email,experience_level,marketing_opt_in,privacy_accepted_at,profile_completed').eq('user_id',academyUser.id).maybeSingle();
  if(seq!==authSequence)return;
  if(error||!data){window.academySessionLoading=false;authMessage('Could not load student profile. Try refreshing the page.');window.closeStudentDashboard?.();return;}
@@ -56,6 +56,7 @@ async function verifyAccess(session){
  }
  window.academyStudentName=data.display_name.trim().split(/\s+/)[0];
  window.academyStudentProfileChanged?.(window.academyStudentName);
+ window.academyRefreshCourseButtons?.();
  authMessage('Welcome back, '+window.academyStudentName+'! Your lessons are ready.');
  await loadProgress();
 }
