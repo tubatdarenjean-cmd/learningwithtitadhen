@@ -58,7 +58,7 @@ field('authSignup').onclick=async()=>{
  const button=field('authSignup');
  if(button.disabled)return;
  const display_name=field('authName').value.trim(),contact_email=field('authEmail').value.trim().toLowerCase(),experience_level=field('authExperience').value,marketing_opt_in=field('authMarketing').checked;
- if(display_name.length<2||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact_email)||!experience_level||!field('authPrivacy').checked){authMessage('Please complete your name, valid email, experience level, and privacy acknowledgement.');return;}
+ const missing=[];if(display_name.length<2)missing.push('your name');if(!contact_email.includes('@')||!contact_email.split('@')[1]?.includes('.'))missing.push('a valid email');if(!experience_level)missing.push('your VA experience');if(!field('authPrivacy').checked)missing.push('privacy acknowledgement');if(missing.length){authMessage('Please check: '+missing.join(', ')+'.');return;}
  button.disabled=true;button.textContent='Saving your student profile…';
  try{
   let {data:{session}}=await academyClient.auth.getSession();
