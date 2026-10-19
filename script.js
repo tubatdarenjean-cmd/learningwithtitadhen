@@ -41,7 +41,7 @@ function refreshCourseButtons(enrolled){
  const buttons={heroDemo:['Enroll for free','Jump back to my lessons'],previewDashboard:['Enroll for free','Jump back to my lessons'],startCourse:['Start learning','Continue learning'],footerStart:["Let's get started",'Jump back to my lessons']};
  for(const [id,[before,after]] of Object.entries(buttons)){const btn=$(id);if(btn)btn.innerHTML=(enrolled?after:before)+' <span aria-hidden="true">↗</span>';}
 }
-window.academyRefreshCourseButtons=()=>refreshCourseButtons(!!window.academyEnrollmentReady);
+window.academyRefreshCourseButtons=()=>{const enrolled=!!window.academyEnrollmentReady;refreshCourseButtons(enrolled);const n=window.academyStudentName||'';const top=$('loginBtn'),mobile=$('mobileLogin');if(top)top.textContent=enrolled?'My lessons ↗':'Enroll for free ↗';if(mobile)mobile.textContent=enrolled?'My lessons':'Enroll for free';for(const id of ['headerLogout','mobileLogout']){const element=$(id);if(element)element.hidden=!enrolled;}};
 window.addEventListener('academy:session-ready',e=>{const enrolled=!!e.detail?.enrolled;refreshCourseButtons(enrolled);const name=e.detail?.name||'';const desktop=$('loginBtn'),mobile=$('mobileLogin');if(desktop)desktop.textContent=enrolled?'Hi, '+name+'! My lessons ↗':'Enroll for free ↗';if(mobile)mobile.textContent=enrolled?'Hi, '+name+'! My lessons':'Enroll for free';for(const id of ['headerLogout','mobileLogout']){const btn=$(id);if(btn)btn.hidden=!enrolled;}});
 
 window.academyStudentProfileChanged=(name)=>{
