@@ -54,15 +54,29 @@ async function verifyAccess(session){
  authMessage('Your profile is saved. You can now access your lessons!');
  await loadProgress();
 }
+const academyTurnstileSiteKey='0x4AAAAAAFbfslHa6qPAxK7p';
+let academyCaptchaToken='',academyCaptchaWidget=null;
+function initializeAcademyCaptcha(){
+ if(!window.turnstile||!field('academyTurnstile')){setTimeout(initializeAcademyCaptcha,300);return;}
+ if(academyCaptchaWidget!==null)return;
+ academyCaptchaWidget=window.turnstile.render('#academyTurnstile',{
+  sitekey:academyTurnstileSiteKey,
+  callback:token=>{academyCaptchaToken=token;},
+  'expired-callback':()=>{academyCaptchaToken='';authMessage('The security check expired. Please verify again.');},
+  'error-callback':()=>{academyCaptchaToken='';authMessage('Security check unavailable. Please refresh and try again.');}
+ });
+}
+initializeAcademyCaptcha();
 field('authSignup').onclick=async()=>{
  const button=field('authSignup');
  if(button.disabled)return;
  const display_name=field('authName').value.trim(),contact_email=field('authEmail').value.trim().toLowerCase(),experience_level=field('authExperience').value,marketing_opt_in=field('authMarketing').checked;
  const missing=[];if(display_name.length<2)missing.push('your name');if(!contact_email.includes('@')||!contact_email.split('@')[1]?.includes('.'))missing.push('a valid email');if(!experience_level)missing.push('your VA experience');if(!field('authPrivacy').checked)missing.push('privacy acknowledgement');if(missing.length){authMessage('Please check: '+missing.join(', ')+'.');return;}
+ if(!academyCaptchaToken){authMessage('Please complete the security verification above before enrolling.');return;}
  button.disabled=true;button.textContent='Saving your student profile…';
  try{
   let {data:{session}}=await academyClient.auth.getSession();
-  if(!session){const create=await academyClient.auth.signInAnonymously();if(create.error)throw create.error;session=create.data.session;}
+  if(!session){const create=await academyClient.auth.signInAnonymously({options:{captchaToken:academyCaptchaToken}});if(create.error)throw create.error;session=create.data.session;}
   if(!session?.user?.id)throw Error('Could not establish your student session.');
   const user_id=session.user.id;
   // The auth signup trigger creates the blank student profile; upsert handles eventual consistency.
@@ -78,7 +92,7 @@ field('authSignup').onclick=async()=>{
   if(typeof window.openStudentCourse==='function')window.openStudentCourse();
  }catch(e){
   authMessage(/Anonymous sign-ins are disabled|anonymous/i.test(e.message)?'Anonymous student access must be enabled in Supabase Authentication → Providers → Anonymous Sign-Ins.':('Could not enroll: '+e.message));
- }finally{button.disabled=false;button.textContent='Save my profile & start learning →';}
+ }finally{if(window.turnstile&&academyCaptchaWidget!==null){window.turnstile.reset(academyCaptchaWidget);academyCaptchaToken='';}button.disabled=false;button.textContent='Save my profile & start learning →';}
 };
 academyClient.auth.onAuthStateChange((event,session)=>setTimeout(()=>verifyAccess(session),0));
 academyClient.auth.getSession().then(({data})=>verifyAccess(data.session));
