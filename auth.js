@@ -42,7 +42,7 @@ window.academySave=(current,i)=>{
 async function verifyAccess(session){
  const seq=++authSequence;
  academyUser=session?.user||null;window.academyEnrollmentReady=false;
- if(!academyUser){window.academySessionLoading=false;window.academyStudentName='';window.academyStudentProfileChanged?.('');window.academyProgressLoaded?.({});window.closeStudentDashboard?.();return;}
+ if(!academyUser){window.academySessionLoading=false;window.academyStudentName='';window.academyStudentProfileChanged?.('');window.closeGraduation?.();window.academyProgressLoaded?.({});window.closeStudentDashboard?.();return;}
  const {data,error}=await academyClient.from('student_profiles').select('display_name,contact_email,experience_level,marketing_opt_in,privacy_accepted_at,profile_completed').eq('user_id',academyUser.id).maybeSingle();
  if(seq!==authSequence)return;
  if(error||!data){window.academySessionLoading=false;authMessage('Could not load student profile. Try refreshing the page.');window.closeStudentDashboard?.();return;}
@@ -99,5 +99,10 @@ field('authSignup').onclick=async()=>{
   authMessage(/Anonymous sign-ins are disabled|anonymous/i.test(e.message)?'Anonymous student access must be enabled in Supabase Authentication → Providers → Anonymous Sign-Ins.':('Could not enroll: '+e.message));
  }finally{if(window.turnstile&&academyCaptchaWidget!==null){window.turnstile.reset(academyCaptchaWidget);academyCaptchaToken='';}button.disabled=false;button.textContent='Save my profile & start learning →';}
 };
+async function academyLogout(){
+ if(!window.confirm('Log out of Learning With Tita Dhen? This password-free account cannot be recovered if you log out, so you may permanently lose your saved lessons and progress. Continue?'))return;
+ try{const {error}=await academyClient.auth.signOut();if(error)throw error;window.academyEnrollmentReady=false;window.academyStudentName='';window.academyStudentProfileChanged?.('');window.closeStudentDashboard?.();window.closeGraduation?.();authMessage('You have logged out. Enroll again to start a new browser-linked student account.');}catch(e){authMessage('Could not log out: '+e.message);}
+}
+['headerLogout','mobileLogout','courseLogout'].forEach(id=>{const b=field(id);if(b)b.onclick=academyLogout;});
 academyClient.auth.onAuthStateChange((event,session)=>setTimeout(()=>verifyAccess(session),0));
 academyClient.auth.getSession().then(({data})=>verifyAccess(data.session));
