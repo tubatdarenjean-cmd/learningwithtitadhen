@@ -21,15 +21,15 @@ $('certificateDownload').onclick=async()=>{
  if(!window.academyEnrollmentReady||!eligible()){alert('Finish all nine modules before receiving your certificate.');return;}
  const button=$('certificateDownload'),notice=$('certificateStatus');
  button.disabled=true;button.textContent='Preparing your certificate…';notice.textContent='Saving your completed lessons and preparing your certificate. Please wait…';
- let tab=null,data=null;
+ let tab=window.open('','_blank'),data=null;
+ if(tab){tab.document.write('<p style="padding:30px;font-family:Arial">Preparing your Learning With Tita Dhen certificate… ♡</p>');}
  try{
   await window.academySyncAllProgress(saved);
   const result=await academyClient.rpc('claim_academy_completion');
   if(result.error||!result.data?.length)throw Error(result.error?.message||'Your completion record is not ready.');
   data=result.data;
-  tab=window.open('','_blank');
   if(!tab)throw Error('Please allow pop-ups for this site, then try again.');
- }catch(e){notice.textContent='Certificate not ready: '+e.message+' You can stay on this page and try again.';button.disabled=false;button.textContent='Get my completion certificate ♡';return;}
+ }catch(e){if(tab)tab.document.body.textContent='Certificate not ready: '+e.message;notice.textContent='Certificate not ready: '+e.message+' You can stay on this page and try again.';button.disabled=false;button.textContent='Get my completion certificate ♡';return;}
  notice.textContent='Certificate ready! A new tab has opened. Select “Save or Print Certificate,” then choose Save as PDF.';
  button.disabled=false;button.textContent='Open my certificate again ♡';
  const record=data[0];
