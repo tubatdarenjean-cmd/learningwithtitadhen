@@ -19,11 +19,19 @@ function showGraduation(){if(!window.academyEnrollmentReady)return;$('graduateNa
 function closeGraduation(){$('graduationOverlay').classList.remove('open');$('graduationOverlay').setAttribute('aria-hidden','true');document.body.style.overflow=$('courseOverlay').classList.contains('open')?'hidden':''}
 $('certificateDownload').onclick=async()=>{
  if(!window.academyEnrollmentReady||!eligible()){alert('Finish all nine modules before receiving your certificate.');return;}
- const tab=window.open('','_blank');
- if(!tab){alert('Please allow pop-ups to print your certificate.');return;}
- tab.document.write('<p style="font-family:Arial;padding:32px">Checking your saved course completion… ♡</p>');
- const {data,error}=await academyClient.rpc('claim_academy_completion');
- if(error||!data?.length){tab.document.body.textContent='Certificate not ready: '+(error?.message||'Unable to confirm saved completion.');return;}
+ const button=$('certificateDownload'),notice=$('certificateStatus');
+ button.disabled=true;button.textContent='Preparing your certificate…';notice.textContent='Saving your completed lessons and preparing your certificate. Please wait…';
+ let tab=null,data=null;
+ try{
+  await window.academySyncAllProgress(saved);
+  const result=await academyClient.rpc('claim_academy_completion');
+  if(result.error||!result.data?.length)throw Error(result.error?.message||'Your completion record is not ready.');
+  data=result.data;
+  tab=window.open('','_blank');
+  if(!tab)throw Error('Please allow pop-ups for this site, then try again.');
+ }catch(e){notice.textContent='Certificate not ready: '+e.message+' You can stay on this page and try again.';button.disabled=false;button.textContent='Get my completion certificate ♡';return;}
+ notice.textContent='Certificate ready! A new tab has opened. Select “Save or Print Certificate,” then choose Save as PDF.';
+ button.disabled=false;button.textContent='Open my certificate again ♡';
  const record=data[0];
  const fullName=$('authName').value.trim()||window.academyStudentName||'Student';
  const date=new Date(record.completed_at).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
