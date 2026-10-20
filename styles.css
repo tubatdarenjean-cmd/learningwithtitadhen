@@ -53,3 +53,5 @@
 }
 
 .bonus-gift-card{border:1px solid #f4c9dc;border-radius:14px;background:#fff;padding:22px;margin:17px 0}.bonus-gift-card h4{font:normal 25px/1.2 var(--serif);margin:12px 0}.bonus-gift-card p{font-size:12px;color:#695761}.bonus-gift-card .btn{white-space:normal;text-align:center;width:100%;gap:8px;margin:10px 0}.bonus-gift-card .btn:disabled{opacity:.65;cursor:not-allowed;transform:none}
+
+.graduation-certificate{background:#fff4f8;border-color:#f2b9d2}.graduation-certificate .btn{margin:8px 0;width:100%;white-space:normal}.graduation-certificate[hidden]{display:none!important}.graduation-certificate .btn:disabled{opacity:.6;cursor:wait}
