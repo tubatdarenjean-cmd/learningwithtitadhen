@@ -4,7 +4,7 @@ $('year').textContent=new Date().getFullYear();
 $('modulePreview').innerHTML=modules.map((m,i)=>`<div class="module-preview"><b>${String(i+1).padStart(2,'0')}</b><span>${m.title}</span></div>`).join('');
 function safe(t){return String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function done(i){return !!saved['done'+i]};function eligible(){return modules.every((_,i)=>done(i))}
-function updateBonus(){let yes=eligible();$('bonusLocked').hidden=yes;$('bonusUnlocked').hidden=!yes;$('bonusSideText').textContent=yes?'UNLOCKED · YOUR GRADUATION GIFT':'LOCKED · COMPLETE ALL MODULES';let reopen=$('reopenGraduation');if(reopen)reopen.hidden=!yes;}
+function updateBonus(){let yes=eligible();let cert=$('graduationCertificate');if(cert)cert.hidden=!yes;$('bonusLocked').hidden=yes;$('bonusUnlocked').hidden=!yes;$('bonusSideText').textContent=yes?'UNLOCKED · YOUR GRADUATION GIFT':'LOCKED · COMPLETE ALL MODULES';let reopen=$('reopenGraduation');if(reopen)reopen.hidden=!yes;}
 function render(){let m=modules[active];$('lessonNumber').textContent=`MODULE ${String(active+1).padStart(2,'0')} / ${String(modules.length).padStart(2,'0')}`;$('appTitle').textContent=m.title;$('lessonIntro').textContent=m.intro;
 $('lessonList').innerHTML=m.sections.map((s,i)=>`<article class="teaching-section"><p class="section-count">LESSON ${String(i+1).padStart(2,'0')} / ${m.sections.length}</p><h4>${safe(s.title)}</h4><p>${safe(s.body)}</p><div class="worked-example"><b>LET'S SEE AN EXAMPLE</b><p>${safe(s.example)}</p></div><p class="tita-note"><b>Tita's reminder:</b> ${safe(s.note)}</p></article>`).join('');
 $('taskText').textContent=m.task;$('taskNotes').value=saved['notes'+active]||'';$('quizQuestion').textContent=m.question;$('quizOptions').innerHTML='';m.options.forEach((x,i)=>{let b=document.createElement('button');b.className='quiz-option';b.textContent=`${String.fromCharCode(65+i)}. ${x}`;b.addEventListener('click',()=>{let right=i===m.correct;saved['quiz'+active]=right;persist();document.querySelectorAll('.quiz-option').forEach((btn,j)=>{btn.classList.toggle('correct',j===m.correct);btn.classList.toggle('wrong',j===i&&!right)});$('quizFeedback').textContent=(right?'Tama! ':'Not quite — try again. ')+m.explain;updateCompletion()});$('quizOptions').appendChild(b)});
@@ -25,10 +25,12 @@ async function titaSignatureImage(){
  image.onerror=()=>reject(new Error('Signature could not be prepared.'));image.src=uri;
  });
 }
+$('certificateDownloadInline').onclick=()=>$('certificateDownload').click();
 $('certificateDownload').onclick=async()=>{
- const button=$('certificateDownload'),notice=$('certificateStatus');
+ const button=$('certificateDownload'),notice=$('certificateStatus'),inline=$('certificateStatusInline'),inlineButton=$('certificateDownloadInline');
+ const updateStatus=text=>{notice.textContent=text;if(inline)inline.textContent=text};
  if(!window.academyEnrollmentReady||!eligible()){notice.textContent='Please complete all nine modules first.';return;}
- button.disabled=true;button.textContent='Creating your PDF…';notice.textContent='Saving and verifying your completed modules. Please wait…';
+ button.disabled=true;inlineButton.disabled=true;button.textContent='Creating your PDF…';inlineButton.textContent='Creating your PDF…';updateStatus('Saving and verifying your completed modules. Please wait…');
  try{
   if(!window.jspdf?.jsPDF)throw Error('The PDF library has not loaded. Refresh the page and retry.');
   await window.academySyncAllProgress(saved);
@@ -61,9 +63,9 @@ $('certificateDownload').onclick=async()=>{
   pdf.text('Certificate ID: '+record.certificate_id,mid,525,{align:'center'});
   pdf.text('Academy course completion record · Not a professional accreditation · Practice work is not independently graded',mid,540,{align:'center'});
   pdf.save('Tita-Dhen-Certificate-'+name.replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'')+'.pdf');
-  notice.textContent='Your PDF download has been started! Check your Downloads folder. You can download it again anytime. ♡';
- }catch(err){notice.textContent='Unable to download yet: '+err.message+' Please try again, or send this message to Tita Dhen.';}
- finally{button.disabled=false;button.textContent='Download my certificate (PDF) ♡';}
+  updateStatus('Your PDF download has been started! Check your Downloads folder. You can download it again anytime. ♡');
+ }catch(err){updateStatus('Unable to download yet: '+err.message+' Please try again, or send this message to Tita Dhen.');}
+ finally{button.disabled=false;inlineButton.disabled=false;button.textContent='Download my certificate (PDF) ♡';inlineButton.textContent='Download my certificate (PDF) ♡';}
 };
 $('graduationContinue').onclick=closeGraduation;$('graduationClose').onclick=closeGraduation;$('graduationOverlay').addEventListener('click',e=>{if(e.target===$('graduationOverlay'))closeGraduation()});
 window.closeGraduation=closeGraduation;
