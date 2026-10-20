@@ -50,6 +50,20 @@ window.academySave=(current,i)=>{
   field('saveMessage').textContent=a.error||b.error?'Progress save failed. Please retry.':'Saved in this browser-linked student account ✓';
  },650);
 };
+window.academySyncAllProgress=async current=>{
+ if(!academyUser||!window.academyEnrollmentReady)throw Error('Please return to your enrolled student session.');
+ clearTimeout(saveTimer);
+ const uid=academyUser.id;
+ const lessons=[],drafts=[];
+ for(let i=0;i<9;i++){
+  const module_id='module-'+i;
+  lessons.push({user_id:uid,module_id,lesson_id:'completion',completed:!!current['done'+i]});
+  lessons.push({user_id:uid,module_id,lesson_id:'quiz',completed:!!current['quiz'+i]});
+  drafts.push({user_id:uid,module_id,response:current['notes'+i]||''});
+ }
+ const [r1,r2]=await Promise.all([academyClient.from('lesson_progress').upsert(lessons),academyClient.from('assignment_drafts').upsert(drafts)]);
+ if(r1.error||r2.error)throw new Error(r1.error?.message||r2.error?.message||'Save failed');
+};
 async function verifyAccess(session){
  const seq=++authSequence;
  academyUser=session?.user||null;window.academyEnrollmentReady=false;
