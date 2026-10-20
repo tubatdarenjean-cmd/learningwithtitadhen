@@ -17,29 +17,53 @@ window.closeStudentDashboard=closeCourse;
 
 function showGraduation(){if(!window.academyEnrollmentReady)return;$('graduateName').textContent=window.academyStudentName||'future VA';$('graduationOverlay').classList.add('open');$('graduationOverlay').setAttribute('aria-hidden','false');document.body.style.overflow='hidden';$('graduationContinue').focus()}
 function closeGraduation(){$('graduationOverlay').classList.remove('open');$('graduationOverlay').setAttribute('aria-hidden','true');document.body.style.overflow=$('courseOverlay').classList.contains('open')?'hidden':''}
+const titaSignatureSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="450 570 1200 1130" width="600" height="270"><path fill="#292027" d="M1597,935 1582,929 1554,944 1519,949 1444,980 1323,1018 1282,1010 1191,1019 1160,1035 1141,1036 1114,1052 1093,1056 1071,1071 1011,1090 986,1106 956,1115 948,1124 931,1126 909,1141 886,1147 872,1160 809,1142 777,1124 722,1067 720,1046 712,1033 712,1006 724,955 775,882 786,877 795,862 805,860 832,827 844,824 852,811 882,790 894,788 905,774 948,752 959,738 1017,714 1027,703 1121,670 1178,669 1215,688 1219,738 1207,808 1225,815 1237,784 1247,722 1239,685 1221,664 1177,645 1118,646 1063,664 957,717 946,732 922,740 850,788 782,848 720,917 702,950 687,998 686,1032 701,1074 744,1127 795,1158 840,1175 667,1269 565,1340 543,1368 552,1376 573,1373 610,1346 629,1342 648,1327 665,1324 684,1309 734,1288 746,1274 808,1252 867,1219 892,1215 906,1203 939,1197 1193,1198 1196,1204 1183,1218 1181,1230 1167,1240 1144,1282 1130,1293 1097,1347 1090,1369 1075,1380 1056,1424 1043,1436 1036,1463 1027,1470 1014,1523 1017,1536 1028,1545 1055,1537 1107,1502 1119,1487 1162,1466 1171,1452 1184,1448 1223,1413 1234,1411 1241,1398 1253,1395 1360,1306 1415,1246 1421,1223 1415,1203 1392,1190 1360,1182 1239,1177 1307,1086 1320,1044 1452,1002 1475,988 1501,985 1529,970 1587,958 1598,947Z M1054,1588 1042,1607 1024,1614 1022,1632 1049,1659 1063,1656 1065,1632 1076,1620 1077,1603 1070,1591Z M1486,823 1473,824 1458,837 1458,857 1473,873 1483,873 1497,856Z M258,1210 253,1197 213,1202 234,1216 253,1216Z M653,587 649,601 663,606 666,594Z"/></svg>';
+async function titaSignatureImage(){
+ return new Promise((resolve,reject)=>{
+ const image=new Image(),uri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(titaSignatureSvg);
+ image.onload=()=>{try{const canvas=document.createElement('canvas');canvas.width=600;canvas.height=270;const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0,600,270);resolve(canvas.toDataURL('image/png'));}catch(e){reject(e)}};
+ image.onerror=()=>reject(new Error('Signature could not be prepared.'));image.src=uri;
+ });
+}
 $('certificateDownload').onclick=async()=>{
- if(!window.academyEnrollmentReady||!eligible()){alert('Finish all nine modules before receiving your certificate.');return;}
  const button=$('certificateDownload'),notice=$('certificateStatus');
- button.disabled=true;button.textContent='Preparing your certificate…';notice.textContent='Saving your completed lessons and preparing your certificate. Please wait…';
- let tab=window.open('','_blank'),data=null;
- if(tab){tab.document.write('<p style="padding:30px;font-family:Arial">Preparing your Learning With Tita Dhen certificate… ♡</p>');}
+ if(!window.academyEnrollmentReady||!eligible()){notice.textContent='Please complete all nine modules first.';return;}
+ button.disabled=true;button.textContent='Creating your PDF…';notice.textContent='Saving and verifying your completed modules. Please wait…';
  try{
+  if(!window.jspdf?.jsPDF)throw Error('The PDF library has not loaded. Refresh the page and retry.');
   await window.academySyncAllProgress(saved);
-  const result=await academyClient.rpc('claim_academy_completion');
-  if(result.error||!result.data?.length)throw Error(result.error?.message||'Your completion record is not ready.');
-  data=result.data;
-  if(!tab)throw Error('Please allow pop-ups for this site, then try again.');
- }catch(e){if(tab)tab.document.body.textContent='Certificate not ready: '+e.message;notice.textContent='Certificate not ready: '+e.message+' You can stay on this page and try again.';button.disabled=false;button.textContent='Get my completion certificate ♡';return;}
- notice.textContent='Certificate ready! A new tab has opened. Select “Save or Print Certificate,” then choose Save as PDF.';
- button.disabled=false;button.textContent='Open my certificate again ♡';
- const record=data[0];
- const fullName=$('authName').value.trim()||window.academyStudentName||'Student';
- const date=new Date(record.completed_at).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
- const escapedName=safe(fullName),escapedDate=safe(date),escapedId=safe(record.certificate_id);
- tab.document.open();
- tab.document.write('<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Learning With Tita Dhen — Course Completion</title><style>@page{size:landscape;margin:14mm}body{margin:0;font-family:Arial,sans-serif;color:#332633;background:white}.certificate{border:8px double #f71970;min-height:160mm;box-sizing:border-box;padding:30px 45px;text-align:center}.brand{font-size:16px;letter-spacing:4px;color:#d41467}.ornament{color:#f71970;font-size:29px;margin:12px}h1{font-family:Georgia,serif;font-size:48px;font-weight:400;margin:18px 0 10px}.name{font-family:Georgia,serif;font-size:40px;color:#f71970;margin:18px 0;border-bottom:1px solid #e6b5cb;display:inline-block;padding:0 45px 9px}.message{font-size:18px;line-height:1.6}.foot{margin-top:25px;font-size:13px}.note{font-size:10px;color:#776c70;margin-top:22px}@media print{button{display:none}}button{margin:14px;padding:12px 25px;border:0;background:#f71970;color:white;cursor:pointer}</style></head><body><div class="certificate"><div class="brand">♡ LEARNING WITH TITA DHEN</div><div class="ornament">✦ ♡ ✦</div><h1>Certificate of Completion</h1><p class="message">This certificate proudly celebrates</p><div class="name">'+escapedName+'</div><p class="message">for completing all nine learning modules and practice activities<br>in the <b>Learning With Tita Dhen — SMM for Beginners</b> course.</p><p class="foot">Completed on '+escapedDate+' · Keep learning. Keep practicing. Kaya mo yan! ♡</p><p class="note">Academy certificate ID: '+escapedId+'<br>A course completion record, not an accredited professional certification. Certificate records completion tracked by the academy. Practice tasks are not independently graded.</p></div><button onclick="window.print()">Save or Print Certificate</button></body></html>');
- tab.document.close();
- tab.focus();
+  const {data,error}=await academyClient.rpc('claim_academy_completion');
+  if(error||!data?.length)throw Error(error?.message||'Could not verify completion yet.');
+  const record=data[0];
+  const name=($('authName').value||window.academyStudentName||'Student').trim();
+  const date=new Date(record.completed_at).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const pdf=new window.jspdf.jsPDF({orientation:'landscape',unit:'pt',format:'a4'});
+  const w=pdf.internal.pageSize.getWidth(),mid=w/2;
+  pdf.setFillColor(255,255,255);pdf.rect(0,0,w,595,'F');
+  pdf.setDrawColor(247,25,112);pdf.setLineWidth(2.4);pdf.rect(26,26,w-52,543);
+  pdf.setLineWidth(.65);pdf.rect(35,35,w-70,525);
+  pdf.setTextColor(191,12,83);pdf.setFont('helvetica','bold');pdf.setFontSize(13);pdf.text('LEARNING WITH TITA DHEN',mid,88,{align:'center'});
+  pdf.setTextColor(42,26,35);pdf.setFont('times','normal');pdf.setFontSize(41);pdf.text('Certificate of Completion',mid,147,{align:'center'});
+  pdf.setFont('helvetica','normal');pdf.setFontSize(13);pdf.text('This certificate is proudly presented to',mid,189,{align:'center'});
+  pdf.setTextColor(224,17,91);pdf.setFont('times','bolditalic');pdf.setFontSize(name.length>35?25:35);
+  const lines=pdf.splitTextToSize(name,620);pdf.text(lines.slice(0,2),mid,236,{align:'center'});
+  pdf.setTextColor(54,42,49);pdf.setFont('helvetica','normal');pdf.setFontSize(12);
+  pdf.text('for completing all nine learning modules and practice activities',mid,301,{align:'center'});
+  pdf.setFont('helvetica','bold');pdf.text('SMM for Beginners · Learning With Tita Dhen',mid,322,{align:'center'});
+  pdf.setFont('helvetica','normal');pdf.setFontSize(10);pdf.setTextColor(103,87,97);
+  pdf.text('Completed on '+date,mid,350,{align:'center'});
+  const sign=await titaSignatureImage();
+  pdf.addImage(sign,'PNG',mid-95,360,190,85);
+  pdf.setDrawColor(165,140,152);pdf.line(mid-120,450,mid+120,450);
+  pdf.setTextColor(44,33,40);pdf.setFont('helvetica','bold');pdf.setFontSize(13);pdf.text('DHAREN TUBAT',mid,470,{align:'center'});
+  pdf.setFont('helvetica','normal');pdf.setFontSize(10);pdf.text('Founder, Learning With Tita Dhen',mid,485,{align:'center'});
+  pdf.setFontSize(8);pdf.setTextColor(105,95,99);
+  pdf.text('Certificate ID: '+record.certificate_id,mid,525,{align:'center'});
+  pdf.text('Academy course completion record · Not a professional accreditation · Practice work is not independently graded',mid,540,{align:'center'});
+  pdf.save('Tita-Dhen-Certificate-'+name.replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'')+'.pdf');
+  notice.textContent='Your PDF download has been started! Check your Downloads folder. You can download it again anytime. ♡';
+ }catch(err){notice.textContent='Unable to download yet: '+err.message+' Please try again, or send this message to Tita Dhen.';}
+ finally{button.disabled=false;button.textContent='Download my certificate (PDF) ♡';}
 };
 $('graduationContinue').onclick=closeGraduation;$('graduationClose').onclick=closeGraduation;$('graduationOverlay').addEventListener('click',e=>{if(e.target===$('graduationOverlay'))closeGraduation()});
 window.closeGraduation=closeGraduation;
